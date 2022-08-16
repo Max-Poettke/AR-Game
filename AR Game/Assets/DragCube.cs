@@ -11,6 +11,8 @@ public class DragCube : MonoBehaviour
 private static Transform tHelper = null;
 public GameObject cube;
 private GameObject cube1;
+private bool leftPressed = false;
+private bool stretchingCube = false;
 private Vector3 temporaryAnchorpoint;
 public OVRInput.Button buttonBL;
 public OVRInput.Button buttonBR;
@@ -19,10 +21,13 @@ public OVRInput.Controller controllerR;
 
 private void Update()
 {
-    var leftPressed = false;
     if(OVRInput.Get(buttonBL, controllerL)){
+        if(leftPressed == false){
+            temporaryAnchorpoint = OVRInput.GetLocalControllerPosition(controllerL);
+        }
+
         leftPressed = true;
-        temporaryAnchorpoint = OVRInput.GetLocalControllerPosition(controllerL);
+        
         if (!tHelper)
         {
             GameObject oHelper = new GameObject();
@@ -37,12 +42,21 @@ private void Update()
         cube1 = Instantiate(cube);
     }
 
-    if(OVRInput.Get(buttonBR, controllerR) && leftPressed){
-        AnimateStretchyCube(cube1.transform, temporaryAnchorpoint);
+    if(OVRInput.GetDown(buttonBR, controllerR) && leftPressed){
+        stretchingCube = true;
     }
+
+    if(OVRInput.GetUp(buttonBR, controllerR)){
+        stretchingCube = false;
+    }
+
+    if(stretchingCube){
+        AnimateStretchyCube(cube1.transform, temporaryAnchorpoint, 0);
+    }
+
 }
 
-private void AnimateStretchyCube(Transform tCube, Vector3 anchorPoint)
+private void AnimateStretchyCube(Transform tCube, Vector3 anchorPoint, int mode)
 {
     tHelper.position = (anchorPoint + OVRInput.GetLocalControllerPosition(controllerR)) * 0.5f;
     tHelper.LookAt(OVRInput.GetLocalControllerPosition(controllerR), Vector3.up);
@@ -54,8 +68,21 @@ private void AnimateStretchyCube(Transform tCube, Vector3 anchorPoint)
     Vector3 vConR = tHelper.InverseTransformPoint(OVRInput.GetLocalControllerPosition(controllerR));
 
     //  SCALE CUBE
-    float fScale = (vConL - vConR).magnitude;
-    tCube.localScale = new Vector3(fScale, fScale, fScale);
+    float fScale =  (vConL - vConR).magnitude;
+/*
+    switch (mode){
+        case 0:
+            return;
+        case 1:
+            return;
+//          break;
+        case 2:
+            return;
+//            break;
+    }
+*/
+    tCube.localScale = new Vector3(tCube.localScale.x, tCube.localScale.y, fScale);
+
 }
 
 
