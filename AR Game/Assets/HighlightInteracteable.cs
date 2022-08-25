@@ -7,10 +7,10 @@ public class HighlightInteracteable : MonoBehaviour
 
     public OVRInput.Controller controllerR;
     public OVRInput.Controller controllerL;
-    public LineRenderer lR;
     public GameObject helper;
     public GameObject quad;
     private GameObject iQuad;
+    private Vector3 expansionDirection;
     private RaycastHit hit;
 
     void Start(){
@@ -27,11 +27,9 @@ public class HighlightInteracteable : MonoBehaviour
     void DetectSurface (OVRInput.Controller controller){
         Debug.DrawRay(OVRInput.GetLocalControllerPosition(controller), OVRInput.GetLocalControllerRotation(controller) * Vector3.forward, Color.red);
         if(Physics.Raycast(OVRInput.GetLocalControllerPosition(controller), OVRInput.GetLocalControllerRotation(controller) * Vector3.forward, out hit, 10)){
-            
-            
-            lR.SetPosition(0, OVRInput.GetLocalControllerPosition(controller));
-            lR.SetPosition(1, hit.point);
-            var scaleVector = new Vector3(hit.normal.x * hit.transform.localScale.x, hit.normal.y * hit.transform.localScale.y, hit.normal.z * hit.transform.localScale.z);
+
+            var localNormal = hit.transform.InverseTransformDirection(hit.normal);
+            var scaleVector = new Vector3(localNormal.x * hit.transform.localScale.x, localNormal.y * hit.transform.localScale.y, localNormal.z * hit.transform.localScale.z);
             iQuad.transform.position = hit.transform.position + (scaleVector * 1.003f / 2f);
             iQuad.transform.rotation = Quaternion.FromToRotation(-Vector3.forward, hit.normal);
             helper.transform.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
@@ -53,7 +51,7 @@ public class HighlightInteracteable : MonoBehaviour
                 }
             }
             
-            Vector3 expansionDirection = new Vector3(arr[0], arr[1], arr[2]);
+            expansionDirection = new Vector3(arr[0], arr[1], arr[2]).normalized;
         }
     }
 }
