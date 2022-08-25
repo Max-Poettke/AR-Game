@@ -7,6 +7,7 @@ public class HighlightInteracteable : MonoBehaviour
 
     public OVRInput.Controller controllerR;
     public OVRInput.Controller controllerL;
+    public LineRenderer lR;
     public GameObject helper;
     public GameObject quad;
     private GameObject iQuad;
@@ -24,10 +25,14 @@ public class HighlightInteracteable : MonoBehaviour
     }
 
     void DetectSurface (OVRInput.Controller controller){
-        if(Physics.Raycast(OVRInput.GetLocalControllerPosition(controller), OVRInput.GetLocalControllerRotation(controller).eulerAngles, out hit, 10)){
+        Debug.DrawRay(OVRInput.GetLocalControllerPosition(controller), OVRInput.GetLocalControllerRotation(controller) * Vector3.forward, Color.red);
+        if(Physics.Raycast(OVRInput.GetLocalControllerPosition(controller), OVRInput.GetLocalControllerRotation(controller) * Vector3.forward, out hit, 10)){
             
-            //iQuad.transform.localScale = new Vector3 (0.5f, 0.5f, 1f);
-            iQuad.transform.position = hit.point + (hit.normal * 0.03f);
+            
+            lR.SetPosition(0, OVRInput.GetLocalControllerPosition(controller));
+            lR.SetPosition(1, hit.point);
+            var scaleVector = new Vector3(hit.normal.x * hit.transform.localScale.x, hit.normal.y * hit.transform.localScale.y, hit.normal.z * hit.transform.localScale.z);
+            iQuad.transform.position = hit.transform.position + (scaleVector * 1.003f / 2f);
             iQuad.transform.rotation = Quaternion.FromToRotation(-Vector3.forward, hit.normal);
             helper.transform.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
 
